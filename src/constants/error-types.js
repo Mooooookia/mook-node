@@ -1,0 +1,5 @@
+const UNAUTHORIZATION = "UNAUTHORIZATION"
+
+module.exports = {
+  UNAUTHORIZATION
+}
