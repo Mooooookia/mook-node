@@ -15,7 +15,6 @@ const verifyToken = async (ctx, next) => {
       algorithms: ["RS256"]
     });
     ctx.user = result;
-    console.log(result)
     await next();
   } catch (err) {
     const error = new Error(errorTypes.UNAUTHORIZATION);

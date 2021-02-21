@@ -26,7 +26,13 @@ const verifyUser = async (ctx, next) => {
 
 const encryptPassword = async (ctx, next) => {
   const { password } = ctx.request.body;
-  ctx.request.body.password = md5password(password);
+  if (password) ctx.request.body.password = md5password(password);
+
+  if (ctx.request.body.oldPassword)
+    ctx.request.body.oldPassword = md5password(ctx.request.body.oldPassword);
+  if (ctx.request.body.newPassword)
+    ctx.request.body.newPassword = md5password(ctx.request.body.newPassword);
+
   await next();
 };
 
@@ -51,14 +57,26 @@ const verifyLogin = async (ctx, next) => {
   const user = result[0];
   if (md5password(password) !== user.password) {
     const error = new Error(errorTypes.PASSWORD_INCORRECT);
-    return ctx.app.emit('error', error, ctx);
+    return ctx.app.emit("error", error, ctx);
   }
   ctx.user = user;
+  await next();
+};
+
+const verifyNewPassword = async (ctx, next) => {
+  const { newPassword = "" } = ctx.request.body;
+  const format = /^\w{6,16}$/;
+
+  if (!format.test(newPassword)) {
+    const error = new Error(errorTypes.PASSWORD_FORMAT);
+    return ctx.app.emit("error", error, ctx);
+  }
   await next();
 };
 
 module.exports = {
   verifyUser,
   encryptPassword,
-  verifyLogin
+  verifyLogin,
+  verifyNewPassword,
 };
