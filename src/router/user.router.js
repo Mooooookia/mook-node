@@ -6,7 +6,16 @@ const {
   userInfo,
   authorInfo,
   changeInfo,
-  changePassword
+  changePassword,
+  addFollow,
+  deleteFollow,
+  following,
+  follower,
+  getUserList,
+  addBlack,
+  deleteBlack,
+  getBlack,
+  getAction
 } = require('../controller/user.controller');
 const {
   verifyUser,
@@ -29,5 +38,14 @@ userRouter.get('/info', verifyToken, userInfo);
 userRouter.patch('/info', verifyToken, changeInfo);
 userRouter.get('/author/:userId', authorInfo);
 userRouter.patch('/password', verifyToken, verifyNewPassword, encryptPassword, changePassword)
+userRouter.post('/follow', verifyToken, addFollow);
+userRouter.delete('/follow', verifyToken, deleteFollow);
+userRouter.get('/following', following);
+userRouter.get('/follower', follower);
+userRouter.get('/list', getUserList);
+userRouter.post('/blacklist', verifyToken, addBlack);
+userRouter.delete('/blacklist', verifyToken, deleteBlack);
+userRouter.get('/blacklist', verifyToken, getBlack);
+userRouter.get('/action', getAction);
 
 module.exports = userRouter;
