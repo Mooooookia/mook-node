@@ -29,7 +29,7 @@ const verifyPermission = async (ctx, next) => {
   const resourceId = ctx.params[resourceKey];
   const {id} = ctx.user;
   try {
-    const result = await authService.checkPermission(tableName, resourceId, id);
+    const result = await authService.checkPermission(tableName, resourceId, id, tableName === 'article' ? 'author' : 'user');
     if (!result.length) throw new Error();
     await next();
   } catch(err) {
