@@ -28,8 +28,16 @@ const verifyPermission = async (ctx, next) => {
   const tableName = resourceKey.replace('Id', '');
   const resourceId = ctx.params[resourceKey];
   const {id} = ctx.user;
+  let idName = 'user';
+  switch(tableName) {
+    case "article":
+      idName = "author";
+      break;
+    default:
+      idName = "user";
+  }
   try {
-    const result = await authService.checkPermission(tableName, resourceId, id, tableName === 'article' ? 'author' : 'user');
+    const result = await authService.checkPermission(tableName, resourceId, id, idName);
     if (!result.length) throw new Error();
     await next();
   } catch(err) {
@@ -56,9 +64,20 @@ const getUserByToken = async (ctx, next) => {
   await next();
 }
 
+const verifyMessage = async (ctx, next) => {
+  const {id} = ctx.user;
+  const {messageId} = ctx.params;
+  const result = await authService.checkMessage(id, messageId);
+  if (!result.length) {
+    const error = new Error(errorTypes.NO_PERMISSION);
+    return ctx.app.emit('error', error, ctx);
+  }
+  await next();
+} 
 
 module.exports = {
   verifyToken,
   verifyPermission,
-  getUserByToken
+  getUserByToken,
+  verifyMessage
 }
