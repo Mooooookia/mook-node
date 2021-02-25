@@ -18,8 +18,9 @@ class CommentController {
   }
 
   async getComment(ctx, next) {
-    const {articleId, offset, limit, order, key, userId} = ctx.query;
-    const result = await commentService.getComment(articleId, offset, limit, order, key, userId);
+    const {articleId, offset, limit, order, key} = ctx.query;
+    const {id} = ctx.user
+    const result = await commentService.getComment(articleId, offset, limit, order, key, id);
     ctx.body = new SuccessModel(result);
   }
 

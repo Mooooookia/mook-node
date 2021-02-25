@@ -89,12 +89,14 @@ class ArticleService {
     return result;
   }
 
-  async getArticleInfo(articleId) {
+  async getArticleInfo(articleId, userId) {
     const statement = `
       SELECT article.*,
       JSON_OBJECT('id', user.id, 'username', user.username, 'nickname', user.nickname) author,
       (SELECT COUNT(1) FROM user_like_article WHERE article_id = article.id) likeCount,
       IF(COUNT(tag.id),JSON_ARRAYAGG(JSON_OBJECT('id', tag.id, 'content', tag.content)),NULL) tags
+      ${!!userId ? `,(SELECT COUNT(1) FROM user_like_article WHERE user_id = ${userId} AND article_id = article.id) liked,
+      (SELECT COUNT(1) FROM user_collect_article WHERE user_id = ${userId} AND article_id = article.id) collected`:""}
       FROM article
       LEFT JOIN user ON user.id = article.author_id
       LEFT JOIN article_tag ON article_id = article.id

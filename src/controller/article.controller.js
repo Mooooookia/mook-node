@@ -51,7 +51,8 @@ class ArticleController {
 
   async getArticleInfo(ctx, next) {
     const {id} = ctx.params;
-    const result = await articleService.getArticleInfo(id);
+    const userId = ctx.user.id;
+    const result = await articleService.getArticleInfo(id, userId);
     ctx.body = result;
   }
 

@@ -10,7 +10,8 @@ const {
 } = require('../controller/comment.controller')
 const {
   verifyToken,
-  verifyPermission
+  verifyPermission,
+  getUserByToken
 } = require('../middleware/auth.middleware');
 
 
@@ -23,7 +24,7 @@ commentRouter.delete('/like', verifyToken, deleteLike);
 commentRouter.post('/reply', verifyToken, reply)
 commentRouter.post('/', verifyToken, addComment);
 commentRouter.delete('/:commentId', verifyToken, verifyPermission, deleteComment);
-commentRouter.get('/', getComment)
+commentRouter.get('/', getUserByToken, getComment)
 
 
 

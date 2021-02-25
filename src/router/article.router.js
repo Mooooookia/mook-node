@@ -15,7 +15,8 @@ const {
 } = require('../controller/article.controller')
 const {
   verifyToken,
-  verifyPermission
+  verifyPermission,
+  getUserByToken
 } = require('../middleware/auth.middleware')
 const {
   verifyTags
@@ -35,7 +36,7 @@ articleRouter.get('/collection', getCollection)
 
 articleRouter.patch('/:articleId', verifyToken, verifyPermission, verifyTags, changeArticle)
 articleRouter.delete('/:articleId', verifyToken, verifyPermission, deleteArticle)
-articleRouter.get('/:id', getArticleInfo);
+articleRouter.get('/:id', getUserByToken, getArticleInfo);
 
 
 

@@ -24,7 +24,8 @@ const {
   verifyNewPassword
 } = require('../middleware/user.middleware')
 const {
-  verifyToken
+  verifyToken,
+  getUserByToken
 } = require('../middleware/auth.middleware');
 
 
@@ -36,7 +37,7 @@ userRouter.post('/test', verifyToken);
 userRouter.get('/avatar/:userId', getAvatar)
 userRouter.get('/info', verifyToken, userInfo);
 userRouter.patch('/info', verifyToken, changeInfo);
-userRouter.get('/author/:userId', authorInfo);
+userRouter.get('/author/:userId', getUserByToken, authorInfo);
 userRouter.patch('/password', verifyToken, verifyNewPassword, encryptPassword, changePassword)
 userRouter.post('/follow', verifyToken, addFollow);
 userRouter.delete('/follow', verifyToken, deleteFollow);

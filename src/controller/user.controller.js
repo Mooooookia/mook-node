@@ -48,7 +48,8 @@ class UserController {
 
   async authorInfo(ctx, next) {
     const { userId } = ctx.params;
-    const result = await userService.getAuthorInfo(userId);
+    const {id} = ctx.user;
+    const result = await userService.getAuthorInfo(userId, id);
     ctx.body = new SuccessModel(result);
   }
 

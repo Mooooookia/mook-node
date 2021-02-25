@@ -30,9 +30,13 @@ class UserService {
     return result[0];
   }
 
-  async getAuthorInfo(userId) {
+  async getAuthorInfo(userId, id) {
     const statement = `
-      SELECT u.id, u.username, u.nickname, u.gender, u.qq, u.email, u.introduction, u.score, u.word_count, u.like_count, u.reward_count, COUNT(f.id) following, (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower 
+      SELECT u.id, u.username, u.nickname, u.gender, u.qq, 
+      u.email, u.introduction, u.score, u.word_count, u.like_count, 
+      u.reward_count, COUNT(f.id) following, 
+      (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower
+      ${!!id ? `,(SELECT COUNT(1) FROM follow WHERE user1_id = ${id} AND user2_id = u.id) followed`:""}
       FROM user u
       LEFT JOIN follow f ON f.user1_id = u.id
       WHERE u.id = ?;

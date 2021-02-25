@@ -39,7 +39,26 @@ const verifyPermission = async (ctx, next) => {
 
 }
 
+const getUserByToken = async (ctx, next) => {
+  const authorization = ctx.headers.authorization;
+  if (!authorization) {
+    ctx.user = {}
+    await next();
+    return;
+  }
+  const token = authorization.replace('Bearer ', '');
+  try {
+    const result = jwt.verify(token, PUBLIC_KEY, {
+      algorithms: ["RS256"]
+    });
+    ctx.user = result;
+  } catch (err) {ctx.user = {}}
+  await next();
+}
+
+
 module.exports = {
   verifyToken,
-  verifyPermission
+  verifyPermission,
+  getUserByToken
 }
