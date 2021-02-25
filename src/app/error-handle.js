@@ -30,6 +30,10 @@ const errorHandler = (error, ctx) => {
       status = 400;
       message = "密码错误"
       break;
+    case errorTypes.NO_PERMISSION:
+      status = 401;
+      message = "没有权限";
+      break;
     default:
       status = 404;
       message = "404 NOT FOUND";

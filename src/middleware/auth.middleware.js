@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const errorTypes = require('../constants/error-types')
 const { PUBLIC_KEY } = require('../app/config');
+const authService = require('../service/auth.service')
 
 const verifyToken = async (ctx, next) => {
   const authorization = ctx.headers.authorization;
@@ -22,6 +23,23 @@ const verifyToken = async (ctx, next) => {
   }
 }
 
+const verifyPermission = async (ctx, next) => {
+  const [resourceKey] = Object.keys(ctx.params);
+  const tableName = resourceKey.replace('Id', '');
+  const resourceId = ctx.params[resourceKey];
+  const {id} = ctx.user;
+  try {
+    const result = await authService.checkPermission(tableName, resourceId, id);
+    if (!result.length) throw new Error();
+    await next();
+  } catch(err) {
+    const error = new Error(errorTypes.NO_PERMISSION);
+    ctx.app.emit('error', error, ctx);
+  }
+
+}
+
 module.exports = {
-  verifyToken
+  verifyToken,
+  verifyPermission
 }
