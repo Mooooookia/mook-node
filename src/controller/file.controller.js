@@ -17,12 +17,13 @@ class FileController {
     const files = ctx.req.files;
     const { id } = ctx.user;
     const { articleId } = ctx.query;
-
+    const filenameList = []
     for (let file of files) {
       const { filename, mimetype, size } = file;
       await fileService.createPicture(filename, mimetype, size, articleId, id);
+      filenameList.push(filename)
     }
-    ctx.body = new SuccessModel();
+    ctx.body = new SuccessModel(filenameList);
   }
   async getPicture(ctx, next) {
     let { filename } = ctx.params;

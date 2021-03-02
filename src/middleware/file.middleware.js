@@ -30,10 +30,10 @@ const pictureResize = async (ctx, next) => {
         image.resize(320, Jimp.AUTO).write(`${destPath}-small`);
       })
     }
-    await next();
   } catch(err) {
     console.log(error);
   }
+  await next();
 }
 
 module.exports = {

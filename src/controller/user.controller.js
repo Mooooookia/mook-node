@@ -34,7 +34,6 @@ class UserController {
   async getAvatar(ctx, next) {
     const { userId } = ctx.params;
     const result = await fileService.getAvatarByUserId(userId);
-
     ctx.response.set("content-type", result.mimetype);
 
     ctx.body = fs.createReadStream(`${AVATAR_PATH}/${result.filename}`);
@@ -87,13 +86,15 @@ class UserController {
 
   async following(ctx, next) {
     const { userId, offset = 0, limit } = ctx.query;
-    const result = await userService.getFollowing(userId, offset, limit);
+    const {id} = ctx.user;
+    const result = await userService.getFollowing(userId, offset, limit, id);
     ctx.body = new SuccessModel(result);
   }
 
   async follower(ctx, next) {
     const { userId, offset = 0, limit } = ctx.query;
-    const result = await userService.getFollower(userId, offset, limit);
+    const {id} = ctx.user;
+    const result = await userService.getFollower(userId, offset, limit, id);
     ctx.body = new SuccessModel(result);
   }
 
@@ -103,14 +104,16 @@ class UserController {
       key = "follower",
       offset = 0,
       limit,
-      search,
+      search = "%",
     } = ctx.query;
+    const {id} = ctx.user;
     const result = await userService.getUserList(
       order,
       key,
       offset,
       limit,
-      search
+      search,
+      id
     );
     ctx.body = new SuccessModel(result);
   }
@@ -139,6 +142,10 @@ class UserController {
     const { userId, offset = 0, limit } = ctx.query;
     const result = await userService.getAction(userId, offset, limit);
     ctx.body = new SuccessModel(result);
+  }
+
+  async test(ctx, next) {
+    ctx.body = new SuccessModel(ctx.user);
   }
 }
 

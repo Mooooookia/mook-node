@@ -33,9 +33,11 @@ class UserService {
   async getAuthorInfo(userId, id) {
     const statement = `
       SELECT u.id, u.username, u.nickname, u.gender, u.qq, 
-      u.email, u.introduction, u.score, u.word_count, u.like_count, 
+      u.email, u.introduction, u.score, 
       u.reward_count, COUNT(f.id) following, 
-      (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower
+      (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower,
+      (SELECT COUNT(1) FROM article WHERE article.author_id = u.id) articleCount,
+      (SELECT COUNT(1) FROM article INNER JOIN user_like_article ON user_like_article.article_id = article.id WHERE article.author_id = u.id) likeCount
       ${!!id ? `,(SELECT COUNT(1) FROM follow WHERE user1_id = ${id} AND user2_id = u.id) followed`:""}
       FROM user u
       LEFT JOIN follow f ON f.user1_id = u.id
@@ -76,9 +78,15 @@ class UserService {
     return result;
   }
 
-  async getFollowing(userId, offset, limit) {
+  async getFollowing(userId, offset, limit, id) {
     let statement = `
-      SELECT u.id userId, u.username, u.nickname, u.word_count, u.like_count, u.reward_count FROM follow f
+      SELECT u.id, u.username, u.nickname,
+      (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower,
+      (SELECT COUNT(1) FROM follow WHERE user1_id = u.id) following,
+      (SELECT COUNT(1) FROM article INNER JOIN user_like_article ON user_like_article.article_id = article.id WHERE article.author_id = u.id) likeCount,
+      (SELECT COUNT(1) FROM article WHERE article.author_id = u.id) articleCount
+      ${!!id ? `,(SELECT COUNT(1) FROM follow WHERE user1_id = ${id} AND user2_id = u.id) followed`:""}
+      FROM follow f
       JOIN user u ON u.id = f.user2_id
       WHERE user1_id = ? LIMIT ?, ?;
     `;
@@ -94,9 +102,15 @@ class UserService {
     return { count: res[0].count, result };
   }
 
-  async getFollower(userId, offset, limit) {
+  async getFollower(userId, offset, limit, id) {
     let statement = `
-      SELECT u.id userId, u.username, u.nickname, u.word_count, u.like_count, u.reward_count FROM follow f
+      SELECT u.id, u.username, u.nickname, u.word_count word,
+      (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower,
+      (SELECT COUNT(1) FROM follow WHERE user1_id = u.id) following,
+      (SELECT COUNT(1) FROM article INNER JOIN user_like_article ON user_like_article.article_id = article.id WHERE article.author_id = u.id) likeCount,
+      (SELECT COUNT(1) FROM article WHERE article.author_id = u.id) articleCount
+      ${!!id ? `,(SELECT COUNT(1) FROM follow WHERE user1_id = ${id} AND user2_id = u.id) followed`:""}
+      FROM follow f
       JOIN user u ON u.id = f.user1_id
       WHERE user2_id = ? LIMIT ?, ?;
     `;
@@ -112,9 +126,14 @@ class UserService {
     return { count: res[0].count, result };
   }
 
-  async getUserList(order, key, offset, limit, search) {
+  async getUserList(order, key, offset, limit, search, id) {
     let statement = `
-      SELECT u.id userId, u.username, u.nickname, u.word_count word, u.like_count \`like\`, (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower
+      SELECT u.id, u.username, u.nickname, u.word_count word, 
+      (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower,
+      (SELECT COUNT(1) FROM follow WHERE user1_id = u.id) following,
+      (SELECT COUNT(1) FROM article INNER JOIN user_like_article ON user_like_article.article_id = article.id WHERE article.author_id = u.id) likeCount,
+      (SELECT COUNT(1) FROM article WHERE article.author_id = u.id) articleCount
+      ${!!id ? `,(SELECT COUNT(1) FROM follow WHERE user1_id = ${id} AND user2_id = u.id) followed`:""}
       FROM user u
       WHERE u.username LIKE "%${search}%"
       ORDER BY ${key} ${order}
@@ -154,6 +173,16 @@ class UserService {
       WHERE b.user1_id = ?;
     `
     const [result] = await connection.execute(statement, [userId]);
+    return result;
+  }
+
+  async queryBlack(user1Id, user2Id) {
+    const statement = `
+      SELECT COUNT(1)
+      FROM blacklist
+      WHERE user1_id = ? and user2_id = ?;
+    `
+    const [result] = await connection.execute(statement, [user1Id, user2Id]);
     return result;
   }
 

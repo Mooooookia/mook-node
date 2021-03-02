@@ -15,7 +15,8 @@ const {
   addBlack,
   deleteBlack,
   getBlack,
-  getAction
+  getAction,
+  test
 } = require('../controller/user.controller');
 const {
   verifyUser,
@@ -33,7 +34,7 @@ const {
 const userRouter = new Router({prefix: '/user'});
 userRouter.post('/register', verifyUser, encryptPassword, register);
 userRouter.post('/login', verifyLogin, login);
-userRouter.post('/test', verifyToken);
+userRouter.post('/test', verifyToken, test);
 userRouter.get('/avatar/:userId', getAvatar)
 userRouter.get('/info', verifyToken, userInfo);
 userRouter.patch('/info', verifyToken, changeInfo);
@@ -41,9 +42,9 @@ userRouter.get('/author/:userId', getUserByToken, authorInfo);
 userRouter.patch('/password', verifyToken, verifyNewPassword, encryptPassword, changePassword)
 userRouter.post('/follow', verifyToken, addFollow);
 userRouter.delete('/follow', verifyToken, deleteFollow);
-userRouter.get('/following', following);
-userRouter.get('/follower', follower);
-userRouter.get('/list', getUserList);
+userRouter.get('/following', getUserByToken, following);
+userRouter.get('/follower', getUserByToken, follower);
+userRouter.get('/list', getUserByToken, getUserList);
 userRouter.post('/blacklist', verifyToken, addBlack);
 userRouter.delete('/blacklist', verifyToken, deleteBlack);
 userRouter.get('/blacklist', verifyToken, getBlack);

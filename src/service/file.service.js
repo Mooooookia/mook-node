@@ -10,7 +10,10 @@ class FileService {
   async getAvatarByUserId (userId) {
     const statement = `SELECT * FROM avatar WHERE user_id = ?;`;
     const [result] = await connection.execute(statement, [userId]);
-    return result.pop();
+    return !!result.length ? result.pop() : {
+      mimetype: "image/jpeg",
+      filename: "default"
+    };
   }
 
   async createPicture (filename, mimetype, size, articleId, userId) {

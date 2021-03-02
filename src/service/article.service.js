@@ -3,9 +3,9 @@ const connection = require('../app/database')
 class ArticleService {
   async getArticleList(offset, limit, userId, tag, search, order, key) {
     let condition = "";
-    if (userId) condition = `article.author_id = ${userId}`;
-    if (tag) condition = `tag.content = ${tag}`;
-    if (search) condition = `article.title LIKE "%${search}%" || article.content LIKE "%${search}%"`
+    if (userId) condition = `WHERE article.author_id = ${userId}`;
+    if (tag) condition = `WHERE tag.content = ${tag}`;
+    if (search) condition = `WHERE article.title LIKE "%${search}%" || article.content LIKE "%${search}%"`
     let statement = `
       SELECT article.id, article.title, article.content, article.view_count viewCount, article.createAt publishTime,
       JSON_OBJECT('id', user.id, 'username', user.username, 'nickname', user.nickname) author,
@@ -15,7 +15,7 @@ class ArticleService {
       LEFT JOIN user ON user.id = article.author_id
       ${!!tag ? `LEFT JOIN article_tag ON article_id = article.id
       LEFT JOIN tag ON tag.id = article_tag.tag_id` : ""}
-      WHERE ${condition} 
+      ${condition} 
       ORDER BY ${key} ${order}
       LIMIT ?, ?;
     `
@@ -27,7 +27,7 @@ class ArticleService {
       LEFT JOIN user ON user.id = article.author_id
       ${!!tag ? `LEFT JOIN article_tag ON article_id = article.id
       LEFT JOIN tag ON tag.id = article_tag.tag_id` : ""}
-      WHERE ${condition};
+      ${condition};
     `
     const [res] = await connection.execute(statement, []);
     return {count: res[0].count, result};
@@ -91,7 +91,7 @@ class ArticleService {
 
   async getArticleInfo(articleId, userId) {
     const statement = `
-      SELECT article.*,
+      SELECT article.id, article.title, article.content, article.view_count viewCount, article.createAt,
       JSON_OBJECT('id', user.id, 'username', user.username, 'nickname', user.nickname) author,
       (SELECT COUNT(1) FROM user_like_article WHERE article_id = article.id) likeCount,
       IF(COUNT(tag.id),JSON_ARRAYAGG(JSON_OBJECT('id', tag.id, 'content', tag.content)),NULL) tags
@@ -126,7 +126,7 @@ class ArticleService {
 
   async getLike(userId, offset, limit) {
     let statement = `
-      SELECT article.id, article.title, article.content, article.createAt, article.view_count,
+      SELECT article.id, article.title, article.content, article.createAt, article.view_count viewCount,
       JSON_OBJECT('id', user.id, 'username', user.username, 'nickname', user.nickname) author,
       (SELECT COUNT(1) FROM user_like_article WHERE article_id = article.id) likeCount,
       (SELECT COUNT(1) FROM comment WHERE article_id = article.id) commentCount
@@ -165,7 +165,7 @@ class ArticleService {
 
   async getCollection(userId, offset, limit) {
     let statement = `
-      SELECT article.id, article.title, article.content, article.createAt, article.view_count,
+      SELECT article.id, article.title, article.content, article.createAt, article.view_count viewCount,
       JSON_OBJECT('id', user.id, 'username', user.username, 'nickname', user.nickname) author,
       (SELECT COUNT(1) FROM user_like_article WHERE article_id = article.id) likeCount,
       (SELECT COUNT(1) FROM comment WHERE article_id = article.id) commentCount
@@ -184,6 +184,13 @@ class ArticleService {
     `
     const [res] = await connection.execute(statement, [userId]);
     return {count: res[0].count, result};
+  }
+  async addViewCount(articleId) {
+    const statement = `
+      UPDATE article SET view_count = view_count + 1 WHERE id = ?;
+    `
+    const [result] = await connection.execute(statement, [articleId]);
+    return result;
   }
 }
 module.exports = new ArticleService();

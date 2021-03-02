@@ -52,8 +52,9 @@ class ArticleController {
   async getArticleInfo(ctx, next) {
     const {id} = ctx.params;
     const userId = ctx.user.id;
+    await articleService.addViewCount(id);
     const result = await articleService.getArticleInfo(id, userId);
-    ctx.body = result;
+    ctx.body = new SuccessModel(result);
   }
 
   async addLike(ctx, next) {
