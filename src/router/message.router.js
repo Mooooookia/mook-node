@@ -2,7 +2,8 @@ const Router = require('koa-router');
 const {
   sendMessage,
   getMessageInfo,
-  getMessageList
+  getMessageList,
+  getMessageRecord
 } = require('../controller/message.controller')
 const {
   verifyToken,
@@ -15,6 +16,7 @@ const messageRouter = new Router({
 
 messageRouter.post('/', verifyToken, sendMessage)
 messageRouter.get('/list', verifyToken, getMessageList)
+messageRouter.get('/record', verifyToken, getMessageRecord)
 messageRouter.get('/:messageId', verifyToken, verifyMessage, getMessageInfo)
 
 

@@ -1,8 +1,8 @@
 const messageService = require('../service/message.service')
 const userService = require('../service/user.service')
+const errorTypes = require('../constants/error-types')
 const {
-  SuccessModel,
-  ErrorModel
+  SuccessModel
 } = require('../model/index')
 
 class MessageController {
@@ -11,11 +11,8 @@ class MessageController {
     const {id} = ctx.user;
     const res = await userService.queryBlack(receiverId, id);
     if (res.length) {
-      ctx.body = new ErrorModel({
-        errno: -1,
-        message: "您已被对方拉黑"
-      })
-      return;
+      const error = new Error(errorTypes.BLACKED)
+      return ctx.app.emit('error', error, ctx);
     }
     const result = await messageService.sendMessage(id, content, receiverId);
     ctx.body = new SuccessModel(result);
@@ -29,9 +26,16 @@ class MessageController {
   }
 
   async getMessageList(ctx, next) {
-    const {offset, limit, idName} = ctx.query;
+    const {offset, limit} = ctx.query;
     const {id} = ctx.user;
-    const result = await messageService.getMessageList(idName, id, offset, limit);
+    const result = await messageService.getMessageList(id, offset, limit);
+    ctx.body = new SuccessModel(result);
+  }
+
+  async getMessageRecord(ctx, next) {
+    const {userId} = ctx.query;
+    const {id} = ctx.user;
+    const result = await messageService.getMessageRecord(id, userId);
     ctx.body = new SuccessModel(result);
   }
 }

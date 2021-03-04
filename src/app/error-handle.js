@@ -34,6 +34,10 @@ const errorHandler = (error, ctx) => {
       status = 401;
       message = "没有权限";
       break;
+    case errorTypes.BLACKED:
+      status = 401;
+      message = "您已被对方拉黑";
+      break;
     default:
       status = 404;
       message = "404 NOT FOUND";

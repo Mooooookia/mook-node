@@ -38,7 +38,10 @@ class UserService {
       (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower,
       (SELECT COUNT(1) FROM article WHERE article.author_id = u.id) articleCount,
       (SELECT COUNT(1) FROM article INNER JOIN user_like_article ON user_like_article.article_id = article.id WHERE article.author_id = u.id) likeCount
-      ${!!id ? `,(SELECT COUNT(1) FROM follow WHERE user1_id = ${id} AND user2_id = u.id) followed`:""}
+      ${!!id ? `
+        ,(SELECT COUNT(1) FROM follow WHERE user1_id = ${id} AND user2_id = u.id) followed,
+        (SELECT COUNT(1) FROM blacklist WHERE user1_id = ${id} AND user2_id = u.id) blacked
+      `:""}
       FROM user u
       LEFT JOIN follow f ON f.user1_id = u.id
       WHERE u.id = ?;
@@ -167,7 +170,7 @@ class UserService {
 
   async getBlack(userId) {
     const statement = `
-      SELECT u.id userId, u.username, u.nickname, u.word_count word, u.like_count \`like\`, (SELECT COUNT(*) FROM follow WHERE user2_id = u.id) follower
+      SELECT u.id, u.username, u.nickname
       FROM blacklist b
       JOIN user u ON u.id = b.user2_id
       WHERE b.user1_id = ?;
@@ -178,7 +181,7 @@ class UserService {
 
   async queryBlack(user1Id, user2Id) {
     const statement = `
-      SELECT COUNT(1)
+      SELECT *
       FROM blacklist
       WHERE user1_id = ? and user2_id = ?;
     `

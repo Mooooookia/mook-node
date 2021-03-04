@@ -11,7 +11,7 @@ class FileController {
 
     const result = await fileService.createAvatar(filename, mimetype, size, id);
 
-    ctx.body = new SuccessModel();
+    ctx.body = new SuccessModel(filename);
   }
   async savePicture(ctx, next) {
     const files = ctx.req.files;
